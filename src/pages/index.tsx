@@ -1,4 +1,4 @@
-import { GetServerSideProps } from "next";
+import { GetStaticProps } from "next";
 
 import Head from "next/head";
 import Image from "next/image";
@@ -41,11 +41,9 @@ export default function Home({ product }: HomeProps) {
   )
 }
 
-// Todo que é retornado do getServerSideProps fica acessível no props de Home
-// Todo código desta função é executado no servidor node do Next, que está rodando no terminal
-export const getServerSideProps: GetServerSideProps = async () => {
+export const getStaticProps: GetStaticProps = async () => {
   const price = await stripe.prices.retrieve("price_1JTvjfDdy2UnATVa4J34sl19", {
-    expand: ["product"], // Para ter acesso às informações do produto, não apenas o preço
+    expand: ["product"],
   });
 
   const product = {
@@ -53,12 +51,13 @@ export const getServerSideProps: GetServerSideProps = async () => {
     amount: new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
-    }).format(price.unit_amount / 100), // preço é em centavos
+    }).format(price.unit_amount / 100),
   };
 
   return {
     props: {
       product,
-    }
+    },
+    revalidate: 60 * 60 * 24 // 24 horas
   }
 }
